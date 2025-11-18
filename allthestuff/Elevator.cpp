@@ -16,13 +16,13 @@
 using namespace std;
 
 void Elevator::tick(int currentTime) {
-    if (servicing && (currentTime % TICKS_PER_ELEVATOR_MOVE == 0))
+    if (servicing && ((currentTime % TICKS_PER_ELEVATOR_MOVE) == 0))
     {
         if (targetFloor > currentFloor)
         {
             currentFloor++;
         }
-        else
+        else if(targetFloor < currentFloor)
         {
             currentFloor--;
         }

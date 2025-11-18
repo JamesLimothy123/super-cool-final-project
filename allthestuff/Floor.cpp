@@ -17,18 +17,19 @@
 using namespace std;
 
 int Floor::tick(int currentTime) {
-	int numExploded = 0;
 	std::vector<int> explodedIndices;
     for (int i = 0; i < MAX_PEOPLE_PER_FLOOR; i++)
 	{
 		if(people[i].tick(currentTime))
 		{
-			numExploded++;
 			explodedIndices.push_back(i);
 		}
 	}
-	removePeople(explodedIndices.data(), numExploded);
-    return numExploded;
+	if(!explodedIndices.empty())
+	{
+ 		removePeople(explodedIndices.data(), explodedIndices.size());
+	}
+    return explodedIndices.size();
 }
 
 void Floor::addPerson(Person newPerson, int request) {
@@ -62,19 +63,21 @@ void Floor::removePeople(const int indicesToRemove[MAX_PEOPLE_PER_FLOOR],
 	//from least to greatest
 	sort(toBeRemoved, toBeRemoved + numPeopleToRemove);
 
-	//overwrite array values to shift them down mfor each index to be removed
+	//overwrite array values to shift them down for each index to be removed
 	for(int index : toBeRemoved)
 	{
-		for (int i = index + 1; i < MAX_PEOPLE_PER_FLOOR; i++)
+		for (int i = index; i < MAX_PEOPLE_PER_FLOOR ; i++)
 		{
 			people[i] = people[i + 1];
 		}
-		
+		numPeople--;
 	}
 	resetRequests();
 }
 
 void Floor::resetRequests() {
+	hasUpRequest = false;
+	hasDownRequest = false;
     for (Person p : people)
 	{
 		if(p.getCurrentFloor() < p.getTargetFloor())
