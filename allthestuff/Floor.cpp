@@ -12,27 +12,81 @@
 
 
 #include "Floor.h"
+#include <algorithm>
 
 using namespace std;
 
 int Floor::tick(int currentTime) {
-    //TODO: Implement tick
-
-    //returning 0 to prevent compilation error
-    return 0;
+	int numExploded = 0;
+	std::vector<int> explodedIndices;
+    for (int i = 0; i < MAX_PEOPLE_PER_FLOOR; i++)
+	{
+		if(people[i].tick(currentTime))
+		{
+			numExploded++;
+			explodedIndices.push_back(i);
+		}
+	}
+	removePeople(explodedIndices.data(), numExploded);
+    return numExploded;
 }
 
 void Floor::addPerson(Person newPerson, int request) {
-    //TODO: Implement addPerson
+    if (numPeople < MAX_PEOPLE_PER_FLOOR)
+	{
+		people[numPeople] = newPerson;
+		numPeople++;
+		if (request > 0)
+		{
+			hasUpRequest = true;
+		}
+		else if(request < 0)
+		{
+			hasDownRequest = true;
+		}
+		
+	}
+	
 }
 
 void Floor::removePeople(const int indicesToRemove[MAX_PEOPLE_PER_FLOOR],
                          int numPeopleToRemove) {
-    //TODO: Implement removePeople
+    int toBeRemoved[MAX_PEOPLE_PER_FLOOR] = {};
+
+	//copying const array to sort it
+	for (int i = 0; i < numPeopleToRemove; i++)
+	{
+		toBeRemoved[i] = indicesToRemove[i];
+	}
+
+	//from least to greatest
+	sort(toBeRemoved, toBeRemoved + numPeopleToRemove);
+
+	//overwrite array values to shift them down mfor each index to be removed
+	for(int index : toBeRemoved)
+	{
+		for (int i = index + 1; i < MAX_PEOPLE_PER_FLOOR; i++)
+		{
+			people[i] = people[i + 1];
+		}
+		
+	}
+	resetRequests();
 }
 
 void Floor::resetRequests() {
-    //TODO: Implement resetRequests
+    for (Person p : people)
+	{
+		if(p.getCurrentFloor() < p.getTargetFloor())
+		{
+			hasUpRequest = true;
+		}
+		else if(p.getCurrentFloor() > p.getTargetFloor())
+		{
+			hasDownRequest = true;
+		}
+	}
+	
 }
 
 //////////////////////////////////////////////////////
