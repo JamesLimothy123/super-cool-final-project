@@ -26,14 +26,11 @@ void Elevator::tick(int currentTime) {
         {
             currentFloor--;
         }
-        
+        else if (targetFloor == currentFloor)
+        {
+            servicing = false;
+        }
     }
-    else if (targetFloor == currentFloor)
-    {
-        servicing = false;
-    }
-    
-    
 }
 
 void Elevator::serviceRequest(int floorNum) {

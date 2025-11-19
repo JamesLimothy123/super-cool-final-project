@@ -18,7 +18,7 @@ using namespace std;
 
 int Floor::tick(int currentTime) {
 	std::vector<int> explodedIndices;
-    for (int i = 0; i < MAX_PEOPLE_PER_FLOOR; i++)
+    for (int i = 0; i < numPeople; i++)
 	{
 		if(people[i].tick(currentTime))
 		{
@@ -52,7 +52,7 @@ void Floor::addPerson(Person newPerson, int request) {
 
 void Floor::removePeople(const int indicesToRemove[MAX_PEOPLE_PER_FLOOR],
                          int numPeopleToRemove) {
-    int toBeRemoved[MAX_PEOPLE_PER_FLOOR] = {};
+    int toBeRemoved[MAX_PEOPLE_PER_FLOOR];
 
 	//copying const array to sort it
 	for (int i = 0; i < numPeopleToRemove; i++)
@@ -66,7 +66,7 @@ void Floor::removePeople(const int indicesToRemove[MAX_PEOPLE_PER_FLOOR],
 	//overwrite array values to shift them down for each index to be removed
 	for(int index : toBeRemoved)
 	{
-		for (int i = index; i < MAX_PEOPLE_PER_FLOOR ; i++)
+		for (int i = index; i < MAX_PEOPLE_PER_FLOOR - 1; i++)
 		{
 			people[i] = people[i + 1];
 		}
@@ -78,18 +78,20 @@ void Floor::removePeople(const int indicesToRemove[MAX_PEOPLE_PER_FLOOR],
 void Floor::resetRequests() {
 	hasUpRequest = false;
 	hasDownRequest = false;
-    for (Person p : people)
+    if(numPeople > 0)
 	{
-		if(p.getCurrentFloor() < p.getTargetFloor())
+		for (int i = 0; i < numPeople; i++)
 		{
-			hasUpRequest = true;
-		}
-		else if(p.getCurrentFloor() > p.getTargetFloor())
-		{
-			hasDownRequest = true;
+			if(people[i].getCurrentFloor() < people[i].getTargetFloor())
+			{
+				hasUpRequest = true;
+			}
+			else if(people[i].getCurrentFloor() > people[i].getTargetFloor())
+			{
+				hasDownRequest = true;
+			}
 		}
 	}
-	
 }
 
 //////////////////////////////////////////////////////
