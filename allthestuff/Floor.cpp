@@ -66,7 +66,7 @@ void Floor::removePeople(const int indicesToRemove[MAX_PEOPLE_PER_FLOOR],
 	//overwrite array values to shift them down for each index to be removed
 	for(int index : toBeRemoved)
 	{
-		for (int i = index; i < MAX_PEOPLE_PER_FLOOR - 1; i++)
+		for (int i = index; i < numPeople - 1; i++)
 		{
 			people[i] = people[i + 1];
 		}
