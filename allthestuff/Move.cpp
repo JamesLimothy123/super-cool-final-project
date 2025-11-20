@@ -68,10 +68,8 @@ bool Move::isValidMove(Elevator elevators[NUM_ELEVATORS]) const {
     else if((isPickup == true) && (((elevatorId >= 0) && (NUM_ELEVATORS > elevatorId)) && !elevators[elevatorId].isServicing())) {
         return true;
     }
-    else if(isPickup == false) {
-        if((targetFloor >= 0) && (NUM_FLOORS > targetFloor) && (targetFloor != elevators[elevatorId].getTargetFloor())) {
-            return true;
-        }
+    else if(isPickup == false && (targetFloor >= 0) && (NUM_FLOORS > targetFloor) && (targetFloor != elevators[elevatorId].getTargetFloor())) {
+        return true;
     }
     else
     {
@@ -92,17 +90,14 @@ void Move::setPeopleToPickup(const string& pickupList, const int currentFloor,
         peopleToPickup[i] = person;
         numPeopleToPickup++;
         
-
-        //take a look at everything below this
-        // Person p = pickupFloor.getPersonByIndex(i);
-        
         totalSatisfaction += (MAX_ANGER - pickupFloor.getPersonByIndex(person).getAngerLevel());
-        
+
+        //something is up here
 
         distances[i] = currentFloor - pickupFloor.getPersonByIndex(person).getTargetFloor(); 
           
     }
-
+    // or here (i think its probably somewhere here)
     for (int i = 0; i < sizeof(distances) / sizeof(distances[0]); i++)
     {
         if (abs(distances[i]) > maxDistance)
