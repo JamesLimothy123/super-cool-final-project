@@ -19,12 +19,14 @@
 using namespace std;
 
 Move::Move(string commandString){
-    int elevatorId = 0;
-    int targetFloor = 0;
-	bool isPass = false;
-    bool isPickup = false;
-    bool isSave = false;
-    bool isQuit = false;
+    elevatorId = -1;
+    targetFloor = -1;    
+    numPeopleToPickup = 0;
+    totalSatisfaction = 0;
+	isPass = false;
+    isPickup = false;
+    isSave = false;
+    isQuit = false;
 
     if(commandString == "") {
         isPass = true;
@@ -37,12 +39,12 @@ Move::Move(string commandString){
     }
     else if (commandString.length() == 3) {
         isPickup = true;
-        //subtract 48 to rezero char to actual integer
-        elevatorId = commandString.at(1) - 48;
+        //subtract '0' to rezero char to actual integer
+        elevatorId = commandString.at(1) - '0';
     }
     else if (commandString.length() == 4) {
-        elevatorId = commandString.at(1) - 48;
-        targetFloor = commandString.at(3) - 48;
+        elevatorId = commandString.at(1) - '0';
+        targetFloor = commandString.at(3) - '0';
 
         // for(int i = 0; i < commandString.length(); i++) {
         //     char c = commandString[i];
@@ -81,7 +83,8 @@ void Move::setPeopleToPickup(const string& pickupList, const int currentFloor,
                              const Floor& pickupFloor) {
     numPeopleToPickup = 0;
     totalSatisfaction = 0;
-    int diff = 0;
+    int maxDistance = 0;
+    int distances[MAX_PEOPLE_PER_FLOOR] = {};
     
     for(int i = 0; i < pickupList.length(); i++) {
         char c = pickupList[i];
@@ -91,17 +94,24 @@ void Move::setPeopleToPickup(const string& pickupList, const int currentFloor,
         
 
         //take a look at everything below this
-        Person p = pickupFloor.getPersonByIndex(i);
+        // Person p = pickupFloor.getPersonByIndex(i);
         
-        totalSatisfaction += (MAX_ANGER - pickupFloor.getPersonByIndex(i).getAngerLevel());
+        totalSatisfaction += (MAX_ANGER - pickupFloor.getPersonByIndex(person).getAngerLevel());
         
-        if(currentFloor - targetFloor > diff){
-            diff = currentFloor - targetFloor;
-            targetFloor = currentFloor;
-        }
-                
+
+        distances[i] = currentFloor - pickupFloor.getPersonByIndex(person).getTargetFloor(); 
+          
     }
-    
+
+    for (int i = 0; i < sizeof(distances) / sizeof(distances[0]); i++)
+    {
+        if (abs(distances[i]) > maxDistance)
+        {
+            maxDistance = distances[i]; 
+        }
+    }
+
+    targetFloor = currentFloor - maxDistance;
 }
 
 //////////////////////////////////////////////////////
