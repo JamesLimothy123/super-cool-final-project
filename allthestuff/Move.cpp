@@ -18,9 +18,14 @@
 
 using namespace std;
 
-Move::Move(string commandString) : Move() {
-    //TODO: Implement non-default constructor
-    int i = 0;
+Move::Move(string commandString){
+    int elevatorId = 0;
+    int targetFloor = 0;
+	bool isPass = false;
+    bool isPickup = false;
+    bool isSave = false;
+    bool isQuit = false;
+
     if(commandString == "") {
         isPass = true;
     }
@@ -32,18 +37,23 @@ Move::Move(string commandString) : Move() {
     }
     else if (commandString.length() == 3) {
         isPickup = true;
+        //subtract 48 to rezero char to actual integer
+        elevatorId = commandString.at(1) - 48;
     }
-    else {
-        for(int i = 0; i < commandString.length(); i++) {
-            char c = commandString[i];
-            tolower(c);
-            if(i == 1) {
-                elevatorId = commandString[i];
-            }
-            else if(i == 3) {
-                targetFloor = commandString[i];
-            }
-        }
+    else if (commandString.length() == 4) {
+        elevatorId = commandString.at(1) - 48;
+        targetFloor = commandString.at(3) - 48;
+
+        // for(int i = 0; i < commandString.length(); i++) {
+        //     char c = commandString[i];
+        //     tolower(c);
+        //     if(i == 1) {
+        //         elevatorId = commandString[i];
+        //     }
+        //     else if(i == 3) {
+        //         targetFloor = commandString[i];
+        //     }
+        // }
     }
 
 }
@@ -53,40 +63,37 @@ bool Move::isValidMove(Elevator elevators[NUM_ELEVATORS]) const {
     if(isPass == true || isQuit == true || isSave == true) {
         return true;
     }
-    if(elevatorId < 0 || NUM_ELEVATORS <= elevatorId) {
-        return false;
+    else if((isPickup == true) && (((elevatorId >= 0) && (NUM_ELEVATORS > elevatorId)) && !elevators[elevatorId].isServicing())) {
+        return true;
     }
-    if(elevators[elevatorId].isServicing()) {
-        return false;
-    }
-    if(isPickup == false) {
-        if(targetFloor < 0 || NUM_FLOORS <= targetFloor) {
-            return false;
-        }
-        if(targetFloor == elevators[elevatorId].getTargetFloor()) {
-            return false;
+    else if(isPickup == false) {
+        if((targetFloor >= 0) && (NUM_FLOORS > targetFloor) && (targetFloor != elevators[elevatorId].getTargetFloor())) {
+            return true;
         }
     }
-    //Returning false to prevent compilation error
-    return true;
+    else
+    {
+        return false;
+    }
 }
 
 void Move::setPeopleToPickup(const string& pickupList, const int currentFloor, 
                              const Floor& pickupFloor) {
-    //TODO: Implement setPeopleToPickup
     numPeopleToPickup = 0;
     totalSatisfaction = 0;
     int diff = 0;
     
     for(int i = 0; i < pickupList.length(); i++) {
         char c = pickupList[i];
-        int intC = c - '0';
-        peopleToPickup[i] = intC;
+        int person = pickupList[i] - '0';
+        peopleToPickup[i] = person;
         numPeopleToPickup++;
         
+
+        //take a look at everything below this
         Person p = pickupFloor.getPersonByIndex(i);
         
-        totalSatisfaction += (MAX_ANGER - p.getAngerLevel());
+        totalSatisfaction += (MAX_ANGER - pickupFloor.getPersonByIndex(i).getAngerLevel());
         
         if(currentFloor - targetFloor > diff){
             diff = currentFloor - targetFloor;
