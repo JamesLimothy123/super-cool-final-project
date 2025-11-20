@@ -14,19 +14,81 @@
 
 using namespace std;
 
-void Building::spawnPerson(Person newPerson){
-    //TODO: Implement spawnPerson
+void Building::spawnPerson(Person newPerson) {
+
+    int request = 0;
+    int current = newPerson.getCurrentFloor();
+    int target = newPerson.getTargetFloor();
+
+    if (target > current) {
+        request = 1;
+    }
+    else if (target < current) {
+        request = -1;
+    }
+    floors[current].addPerson(newPerson, request);
 }
 
 void Building::update(Move move){
-    //TODO: Implement update
+    // PASS MOVE
+    if (move.isPassMove()) {
+        return;
+    }
+
+    // PICKUP MOVE
+    if (move.isPickupMove()) {
+        int e = move.getElevatorId();
+        int floor = elevators[e].getCurrentFloor();
+
+        // Copy people indices
+        int indices[MAX_PEOPLE_PER_FLOOR];
+        move.copyListOfPeopleToPickup(indices);
+
+        int n = move.getNumPeopleToPickup();
+
+        if (n > 0) {
+            Person toLoad[ELEVATOR_CAPACITY];
+            for (int i = 0; i < n; i++) {
+                toLoad[i] = floors[floor].getPersonByIndex(indices[i]);
+            }
+
+            elevators[e].serviceRequest(move.getTargetFloor());
+            floors[floor].removePeople(indices, n);
+        }
+
+        // set service target floor
+        elevators[e].serviceRequest(move.getTargetFloor());
+        return;
+    }
+
+    // SERVICE MOVE
+    if (move.getElevatorId() != -1 && move.getTargetFloor() != -1) {
+        int e = move.getElevatorId();
+        elevators[e].serviceRequest(move.getTargetFloor());
+        return;
+    }
+
+    // SAVE / QUIT
+    if (move.isSaveMove() || move.isQuitMove()) {
+        return;
+    }
 }
 
 int Building::tick(Move move){
-    //TODO: Implement tick
+    time++;
+    update(move);
 
-    //returning 0 to prevent compilation error
-    return 0;
+    for (int i = 0; i < NUM_ELEVATORS; i++) {
+        elevators[i].tick(time);
+    }
+
+    int exploded = 0;
+
+    for (int i = 0; i < NUM_FLOORS; i++) {
+        exploded += floors[i].tick(time);
+    }
+
+    return exploded;
 }
 
 //////////////////////////////////////////////////////
