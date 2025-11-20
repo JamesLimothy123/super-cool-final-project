@@ -4,8 +4,8 @@
  * Elevator.cpp
  * Project UID 848fee0125dbb5eb53ed294f20dbef81
  *
- * <#Names#>
- * <#Uniqnames#>
+ * James Lim, Aaron Yoon, Jerry Chen, Milan Charlakolu
+ * jblim, aayoon, chjerry, charlakm
  *
  * Final Project - Elevators
  */

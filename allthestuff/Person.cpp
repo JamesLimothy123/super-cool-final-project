@@ -4,8 +4,8 @@
  * Person.cpp
  * Project UID 848fee0125dbb5eb53ed294f20dbef81
  *
- * <#Aaron Yoon, Milan Charlakolu, Jerry Chen, James Lim#>
- * <#Uniqnames#>
+ * James Lim, Aaron Yoon, Jerry Chen, Milan Charlakolu
+ * jblim, aayoon, chjerry, charlakm
  *
  * Final Project - Elevators
  */

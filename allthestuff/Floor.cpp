@@ -4,8 +4,8 @@
  * Floor.cpp
  * Project UID 848fee0125dbb5eb53ed294f20dbef81
  *
- * <#Names#>
- * <#Uniqnames#>
+ * James Lim, Aaron Yoon, Jerry Chen, Milan Charlakolu
+ * jblim, aayoon, chjerry, charlakm
  *
  * Final Project - Elevators
  */
@@ -27,9 +27,9 @@ int Floor::tick(int currentTime) {
 	}
 	if(!explodedIndices.empty())
 	{
- 		removePeople(explodedIndices.data(), explodedIndices.size());
+ 		removePeople(explodedIndices.data(), static_cast<int>(explodedIndices.size()));
 	}
-    return explodedIndices.size();
+    return static_cast<int>(explodedIndices.size());
 }
 
 void Floor::addPerson(Person newPerson, int request) {

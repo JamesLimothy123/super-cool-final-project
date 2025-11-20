@@ -29,9 +29,29 @@
 using namespace std;
 
 // declare your test functions here
+void file_check();
 
 void start_tests() {
-    // call your test functions here
+    Move m("e1f4");
+    
+    file_check();
+    
+    return;
+}
+
+void file_check() {
+    
+    // open one of the text files that are part of the starter code
+    ifstream ins;
+    ins.open("new.in");
+    
+    // if the file was not in the correct directory, the stream state is fail
+    if (ins.fail()) {
+        cout << "Could not open new.in" << endl;
+    }
+    else {
+        cout << "Success! Text files are in the right directory." << endl;
+    }
     
     return;
 }

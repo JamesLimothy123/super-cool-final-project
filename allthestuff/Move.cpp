@@ -4,8 +4,8 @@
  * Move.cpp
  * Project UID 848fee0125dbb5eb53ed294f20dbef81
  *
- * Milan Charlakolu
- * charlakm
+ * James Lim, Aaron Yoon, Jerry Chen, Milan Charlakolu
+ * jblim, aayoon, chjerry, charlakm
  *
  * Final Project - Elevators
  */
@@ -45,30 +45,18 @@ Move::Move(string commandString){
     else if (commandString.length() == 4) {
         elevatorId = commandString.at(1) - '0';
         targetFloor = commandString.at(3) - '0';
-
-        // for(int i = 0; i < commandString.length(); i++) {
-        //     char c = commandString[i];
-        //     tolower(c);
-        //     if(i == 1) {
-        //         elevatorId = commandString[i];
-        //     }
-        //     else if(i == 3) {
-        //         targetFloor = commandString[i];
-        //     }
-        // }
     }
 
 }
 
 bool Move::isValidMove(Elevator elevators[NUM_ELEVATORS]) const {
-    //TODO: Implement isValidMove
     if(isPass == true || isQuit == true || isSave == true) {
         return true;
     }
-    else if((isPickup == true) && (((elevatorId >= 0) && (NUM_ELEVATORS > elevatorId)) && !elevators[elevatorId].isServicing())) {
+    else if(((elevatorId >= 0) && (NUM_ELEVATORS > elevatorId)) && !elevators[elevatorId].isServicing()) {
         return true;
     }
-    else if(isPickup == false && (targetFloor >= 0) && (NUM_FLOORS > targetFloor) && (targetFloor != elevators[elevatorId].getTargetFloor())) {
+    else if((isPickup == false) && (targetFloor >= 0) && (NUM_FLOORS > targetFloor) && (targetFloor != elevators[elevatorId].getTargetFloor())) {
         return true;
     }
     else
@@ -85,27 +73,21 @@ void Move::setPeopleToPickup(const string& pickupList, const int currentFloor,
     int distances[MAX_PEOPLE_PER_FLOOR] = {};
     
     for(int i = 0; i < pickupList.length(); i++) {
-        char c = pickupList[i];
         int person = pickupList[i] - '0';
         peopleToPickup[i] = person;
         numPeopleToPickup++;
         
         totalSatisfaction += (MAX_ANGER - pickupFloor.getPersonByIndex(person).getAngerLevel());
 
-        //something is up here
-
-        distances[i] = currentFloor - pickupFloor.getPersonByIndex(person).getTargetFloor(); 
-          
+        distances[i] = currentFloor - pickupFloor.getPersonByIndex(person).getTargetFloor();
     }
-    // or here (i think its probably somewhere here)
     for (int i = 0; i < sizeof(distances) / sizeof(distances[0]); i++)
     {
-        if (abs(distances[i]) > maxDistance)
+        if (abs(distances[i]) > abs(maxDistance))
         {
-            maxDistance = distances[i]; 
+            maxDistance = distances[i];
         }
     }
-
     targetFloor = currentFloor - maxDistance;
 }
 
