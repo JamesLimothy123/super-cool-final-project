@@ -52,8 +52,10 @@ void Floor::addPerson(Person newPerson, int request) {
 
 void Floor::removePeople(const int indicesToRemove[MAX_PEOPLE_PER_FLOOR],
                          int numPeopleToRemove) {
-    int toBeRemoved[MAX_PEOPLE_PER_FLOOR];
 
+							
+    int toBeRemoved[MAX_PEOPLE_PER_FLOOR] = {};
+	fill(toBeRemoved, toBeRemoved + MAX_PEOPLE_PER_FLOOR, 20);
 	//copying const array to sort it
 	for (int i = 0; i < numPeopleToRemove; i++)
 	{
@@ -64,11 +66,13 @@ void Floor::removePeople(const int indicesToRemove[MAX_PEOPLE_PER_FLOOR],
 	sort(toBeRemoved, toBeRemoved + numPeopleToRemove);
 
 	//overwrite array values to shift them down for each index to be removed
-	for(int index : toBeRemoved)
+	//starting from the greatest value
+	for(int i = numPeopleToRemove - 1; i >= 0; i--)
 	{
-		for (int i = index; i < numPeople - 1; i++)
+		int index = toBeRemoved[i];
+		for (int j = index; j < numPeople - 1; j++)
 		{
-			people[i] = people[i + 1];
+			people[j] = people[j+ 1];
 		}
 		numPeople--;
 	}
