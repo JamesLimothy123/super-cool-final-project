@@ -4,8 +4,8 @@
  * Move.cpp
  * Project UID 848fee0125dbb5eb53ed294f20dbef81
  *
- * <#Names#>
- * <#Uniqnames#>
+ * Milan Charlakolu
+ * charlakm
  *
  * Final Project - Elevators
  */
@@ -20,18 +20,81 @@ using namespace std;
 
 Move::Move(string commandString) : Move() {
     //TODO: Implement non-default constructor
+    int i = 0;
+    if(commandString == "") {
+        isPass = true;
+    }
+    else if(commandString == "s" || commandString == "S") {
+        isSave = true;
+    }
+    else if(commandString == "q" || commandString == "Q") {
+        isQuit = true;
+    }
+    else if (commandString.length() == 3) {
+        isPickup = true;
+    }
+    else {
+        for(int i = 0; i < commandString.length(); i++) {
+            char c = commandString[i];
+            tolower(c);
+            if(i == 1) {
+                elevatorId = commandString[i];
+            }
+            else if(i == 3) {
+                targetFloor = commandString[i];
+            }
+        }
+    }
+
 }
 
 bool Move::isValidMove(Elevator elevators[NUM_ELEVATORS]) const {
     //TODO: Implement isValidMove
-    
+    if(isPass == true || isQuit == true || isSave == true) {
+        return true;
+    }
+    if(elevatorId < 0 || NUM_ELEVATORS <= elevatorId) {
+        return false;
+    }
+    if(elevators[elevatorId].isServicing()) {
+        return false;
+    }
+    if(isPickup == false) {
+        if(targetFloor < 0 || NUM_FLOORS <= targetFloor) {
+            return false;
+        }
+        if(targetFloor == elevators[elevatorId].getTargetFloor()) {
+            return false;
+        }
+    }
     //Returning false to prevent compilation error
-    return false;
+    return true;
 }
 
 void Move::setPeopleToPickup(const string& pickupList, const int currentFloor, 
                              const Floor& pickupFloor) {
     //TODO: Implement setPeopleToPickup
+    numPeopleToPickup = 0;
+    totalSatisfaction = 0;
+    int diff = 0;
+    
+    for(int i = 0; i < pickupList.length(); i++) {
+        char c = pickupList[i];
+        int intC = c - '0';
+        peopleToPickup[i] = intC;
+        numPeopleToPickup++;
+        
+        Person p = pickupFloor.getPersonByIndex(i);
+        
+        totalSatisfaction += (MAX_ANGER - p.getAngerLevel());
+        
+        if(currentFloor - targetFloor > diff){
+            diff = currentFloor - targetFloor;
+            targetFloor = currentFloor;
+        }
+                
+    }
+    
 }
 
 //////////////////////////////////////////////////////
