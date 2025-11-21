@@ -1,55 +1,49 @@
-
 /*
  * Copyright 2023 University of Michigan EECS183
  *
  * Game.cpp
  * Project UID 848fee0125dbb5eb53ed294f20dbef81
  *
- * James Lim, Aaron Yoon, Jerry Chen, Milan Charlakolu
- * jblim, aayoon, chjerry, charlakm
+ * <#Names#>
+ * <#Uniqnames#>
  *
  * Final Project - Elevators
  */
-
+ 
 #include <random>
 #include <sstream>
 #include "Game.h"
 #include "AI.h"
 #include "Utility.h"
-    using namespace std;
+using namespace std;
 
 // Stub for playGame for Core, which plays random games
 // You *must* revise this function according to the RME and spec
 // Code that will not appear in your solution is noted in the comments
-void Game::playGame(bool isAIModeIn, ifstream & gameFile) {
-    // If the game input file is not open, exit with status 1
+void Game::playGame(bool isAIModeIn, ifstream& gameFile) {
     if (!gameFile.is_open()) {
         exit(1);
     }
 
     isAIMode = isAIModeIn;
     printGameStartPrompt();
-    initGame(gameFile);
+    initGame(gameFile);  // reads satisfactionIndex, time, elevators
 
     string nextEventString;
     bool hasNextEvent = static_cast<bool>(gameFile >> nextEventString);
 
-    // Main game loop; checkForGameEnd() will terminate the program when needed
     while (true) {
-        // 1) Spawn all people whose turn matches the current building time
         while (hasNextEvent) {
             Person p(nextEventString);
             int eventTurn = p.getTurn();
 
             if (eventTurn == building.getTime()) {
-                // Event occurs right now: add this person to the building
+
                 building.spawnPerson(p);
 
-                // Read the next event for future turns
                 if (gameFile >> nextEventString) {
                     hasNextEvent = true;
-                }
-                else {
+                } else {
                     hasNextEvent = false;
                 }
             }
@@ -58,94 +52,73 @@ void Game::playGame(bool isAIModeIn, ifstream & gameFile) {
             }
         }
 
-        // 2) Print the current state of the building and satisfaction index
         building.prettyPrintBuilding(cout);
-        // This matches the behavior from the original stub
         satisfactionIndex.printSatisfaction(cout, false);
+        checkForGameEnd();   // may end the game
 
-        // 3) Check whether the game has ended
-        checkForGameEnd();
-
-        // 4) Get the next move (human or AI)
         Move nextMove = getMove();
-
-        // 5) Apply the move and advance the simulation one tick
         update(nextMove);
     }
 }
 
-bool Game::isValidPickupList(const string & pickupList,
-    const int pickupFloorNum) const {
-    // Get the floor where the pickup is happening
-    Floor currentFloor = building.getFloorByFloorNum(pickupFloorNum);
-    int numPeople = currentFloor.getNumPeople();
+bool Game::isValidPickupList(const string& pickupList,
+                              const int pickupFloorNum) const {
+     Floor currentFloor = building.getFloorByFloorNum(pickupFloorNum);
+     int numPeople = currentFloor.getNumPeople();
 
-    // Must choose at least one person
-    if (pickupList.empty()) {
-        return false;
-    }
+     if (pickupList.empty()) {
+         return false;
+     }
 
-    // Track duplicates
-    bool alreadyChosen[MAX_PEOPLE_PER_FLOOR] = { false };
+     bool chosen[MAX_PEOPLE_PER_FLOOR] = { false };
 
-    // Direction: 0 = not set yet, 1 = up, -1 = down
-    int direction = 0;
+     int direction = 0;
 
-    for (int i = 0; i < static_cast<int>(pickupList.size()); ++i) {
-        char c = pickupList[i];
+     for (int i = 0; i < static_cast<int>(pickupList.size()); ++i) {
+         char c = pickupList[i];
 
-        // All chars must be digits
-        if (c < '0' || c > '9') {
-            return false;
-        }
+         if (c < '0' || c > '9') {
+             return false;
+         }
 
-        int index = c - '0';
+         int index = c - '0';
 
-        // Index must be in range of people on this floor
-        if (index < 0 || index >= numPeople) {
-            return false;
-        }
+         if (index < 0 || index >= numPeople) {
+             return false;
+         }
 
-        // No duplicates allowed
-        if (alreadyChosen[index]) {
-            return false;
-        }
-        alreadyChosen[index] = true;
+         if (chosen[index]) {
+             return false;
+         }
+         chosen[index] = true;
 
-        // Determine this person's direction relative to the floor
-        Person p = currentFloor.getPersonByIndex(index);
-        int target = p.getTargetFloor();
+         Person p = currentFloor.getPersonByIndex(index);
+         int target = p.getTargetFloor();
 
-        int thisDir;
-        if (target > pickupFloorNum) {
-            thisDir = 1;      // wants to go up
-        }
-        else if (target < pickupFloorNum) {
-            thisDir = -1;     // wants to go down
-        }
-        else {
-            // Someone whose target floor == current floor shouldn't happen;
-            // treat as invalid selection.
-            return false;
-        }
+         int thisDir;
+         if (target > pickupFloorNum) {
+             thisDir = 1;
+         } else if (target < pickupFloorNum) {
+             thisDir = -1;
+         } else {
+             return false;
+         }
 
-        // All chosen people must have the same direction
-        if (direction == 0) {
-            direction = thisDir;
-        }
-        else if (thisDir != direction) {
-            return false;
-        }
-    }
+         if (direction == 0) {
+             direction = thisDir;
+         } else if (thisDir != direction) {
+             return false;
+         }
+     }
 
-    return true;
-}
+     return true;
+ }
 
 //////////////////////////////////////////////////////
 ////// DO NOT MODIFY ANY CODE BENEATH THIS LINE //////
 //////////////////////////////////////////////////////
 
-bool Game::performMove(Move & move) const
+bool Game::performMove(Move& move) const
 {
     Elevator elevators[NUM_ELEVATORS];
 
@@ -158,8 +131,8 @@ bool Game::performMove(Move & move) const
     {
 
         Elevator taggedElevator = building.getElevatorById(move.getElevatorId());
-        Floor taggedFloor =
-            building.getFloorByFloorNum(taggedElevator.getCurrentFloor());
+        Floor taggedFloor = 
+                  building.getFloorByFloorNum(taggedElevator.getCurrentFloor());
 
         if (taggedFloor.getNumPeople() > 0)
         {
@@ -292,10 +265,10 @@ void Game::printSatisfactionIndex() const
         << endl;
 }
 
-void Game::getPeopleToPickup(Move & move) const
+void Game::getPeopleToPickup(Move& move) const
 {
-    int currentFloorNum =
-        building.getElevatorById(move.getElevatorId()).getCurrentFloor();
+    int currentFloorNum = 
+               building.getElevatorById(move.getElevatorId()).getCurrentFloor();
     Floor currentFloor = building.getFloorByFloorNum(currentFloorNum);
 
     if (currentFloor.getNumPeople() == 1)
@@ -411,7 +384,7 @@ bool Game::performSave() const
     return saveGame(saveFile);
 }
 
-void Game::initGame(ifstream & loadFile)
+void Game::initGame(ifstream& loadFile)
 {
     cout << endl
         << "Loading game..." << endl;
@@ -429,7 +402,7 @@ void Game::initGame(ifstream & loadFile)
         building.setElevator(elvState, i);
         i++;
     }
-
+    
     if (!loadFile.fail()) {
         cout << "Loaded!" << endl << endl;
     }
@@ -522,7 +495,7 @@ void Game::checkForGameEnd() const
     }
 }
 
-void Game::update(const Move & m)
+void Game::update(const Move& m)
 {
     if (m.isPickupMove())
     {
@@ -538,6 +511,6 @@ void Game::update(const Move & m)
 
 // Stub for saveGame for project
 // You will *not* implement this function for the project
-bool Game::saveGame(ofstream & saveFile) const {
+bool Game::saveGame(ofstream& saveFile) const {
     return true;
 }
