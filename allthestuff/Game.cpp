@@ -22,39 +22,33 @@ using namespace std;
 // Code that will not appear in your solution is noted in the comments
 void Game::playGame(bool isAIModeIn, ifstream& gameFile) {
     if (!gameFile.is_open()) {
-        exit(1);
+        return;
     }
 
     isAIMode = isAIModeIn;
     printGameStartPrompt();
-    initGame(gameFile);  // reads satisfactionIndex, time, elevators
+    initGame(gameFile);
 
-    string nextEventString;
-    bool hasNextEvent = static_cast<bool>(gameFile >> nextEventString);
+    string eventString;
+    while (gameFile >> eventString) {
+        Person nextPerson(eventString);
+        int appearTurn = nextPerson.getTurn();
+        while (building.getTime() < appearTurn) {
+            building.prettyPrintBuilding(cout);
+            satisfactionIndex.printSatisfaction(cout, false);
+            checkForGameEnd();
 
-    while (true) {
-        while (hasNextEvent) {
-            Person p(nextEventString);
-            int eventTurn = p.getTurn();
-
-            if (eventTurn == building.getTime()) {
-
-                building.spawnPerson(p);
-
-                if (gameFile >> nextEventString) {
-                    hasNextEvent = true;
-                } else {
-                    hasNextEvent = false;
-                }
-            }
-            else {
-                break;
-            }
+            Move nextMove = getMove();
+            update(nextMove);
         }
 
+        building.spawnPerson(nextPerson);
+    }
+
+    while (true) {
         building.prettyPrintBuilding(cout);
         satisfactionIndex.printSatisfaction(cout, false);
-        checkForGameEnd();   // may end the game
+        checkForGameEnd();
 
         Move nextMove = getMove();
         update(nextMove);

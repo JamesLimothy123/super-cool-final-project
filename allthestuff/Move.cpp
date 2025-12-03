@@ -18,79 +18,116 @@
 
 using namespace std;
 
-Move::Move(string commandString){
+Move::Move(string commandString) {
+    // Initialize defaults
     elevatorId = -1;
-    targetFloor = -1;    
+    targetFloor = -1;
     numPeopleToPickup = 0;
     totalSatisfaction = 0;
-	isPass = false;
+    isPass = false;
     isPickup = false;
     isSave = false;
     isQuit = false;
 
-    if(commandString == "") {
+    // Empty string -> Pass move
+    if (commandString.size() == 0) {
         isPass = true;
+        return;
     }
-    else if(commandString == "s" || commandString == "S") {
+
+    char c0 = commandString[0];
+
+    if (c0 == 's' || c0 == 'S') {
         isSave = true;
+        return;
     }
-    else if(commandString == "q" || commandString == "Q") {
+    if (c0 == 'q' || c0 == 'Q') {
         isQuit = true;
+        return;
     }
-    else if (commandString.length() == 3) {
+
+    if (c0 != 'e' && c0 != 'E') {
+        return;
+    }
+
+    if (commandString.size() == 3 &&
+        isdigit(commandString[1]) &&
+        (commandString[2] == 'p' || commandString[2] == 'P')) {
+
         isPickup = true;
-        //subtract '0' to rezero char to actual integer
-        elevatorId = commandString.at(1) - '0';
+        elevatorId = commandString[1] - '0';
+        return;
     }
-    else if (commandString.length() == 4) {
-        elevatorId = commandString.at(1) - '0';
-        targetFloor = commandString.at(3) - '0';
+
+    if (commandString.size() == 4 &&
+        isdigit(commandString[1]) &&
+        (commandString[2] == 'f' || commandString[2] == 'F') &&
+        isdigit(commandString[3])) {
+
+        elevatorId = commandString[1] - '0';
+        targetFloor = commandString[3] - '0';
+        return;
     }
 
 }
 
 bool Move::isValidMove(Elevator elevators[NUM_ELEVATORS]) const {
-    if(isPass == true || isQuit == true || isSave == true) {
+    if (isPass || isSave || isQuit) {
         return true;
     }
-    else if(((elevatorId >= 0) && (NUM_ELEVATORS > elevatorId)) && !elevators[elevatorId].isServicing()) {
-        return true;
-    }
-    else if((isPickup == false) && (targetFloor >= 0) && (NUM_FLOORS > targetFloor) && (targetFloor != elevators[elevatorId].getTargetFloor())) {
-        return true;
-    }
-    else
-    {
+
+    if (elevatorId < 0 || elevatorId >= NUM_ELEVATORS) {
         return false;
     }
+
+    if (elevators[elevatorId].isServicing()) {
+        return false;
+    }
+
+    if (isPickup) {
+        return true;
+    }
+
+    if (targetFloor < 0 || targetFloor >= NUM_FLOORS) {
+        return false;
+    }
+
+    if (targetFloor == elevators[elevatorId].getCurrentFloor()) {
+        return false;
+    }
+
+    return true;
 }
 
-void Move::setPeopleToPickup(const string& pickupList, const int currentFloor, 
+void Move::setPeopleToPickup(const string& pickupList,
+                             const int currentFloor,
                              const Floor& pickupFloor) {
     numPeopleToPickup = 0;
     totalSatisfaction = 0;
-    int maxDistance = 0;
-    int distances[MAX_PEOPLE_PER_FLOOR] = {};
-    
-    for(int i = 0; i < pickupList.length(); i++) {
-        int person = pickupList[i] - '0';
-        peopleToPickup[i] = person;
-        numPeopleToPickup++;
-        
-        totalSatisfaction += (MAX_ANGER - pickupFloor.getPersonByIndex(person).getAngerLevel());
 
-        distances[i] = currentFloor - pickupFloor.getPersonByIndex(person).getTargetFloor();
-    }
-    for (int i = 0; i < sizeof(distances) / sizeof(distances[0]); i++)
-    {
-        if (abs(distances[i]) > abs(maxDistance))
-        {
-            maxDistance = distances[i];
+    int maxDistance = 0;
+    bool first = true;
+
+    for (int i = 0; i < static_cast<int>(pickupList.size()); ++i) {
+        int idx = pickupList[i] - '0';
+
+        peopleToPickup[numPeopleToPickup] = idx;
+        numPeopleToPickup++;
+
+        Person p = pickupFloor.getPersonByIndex(idx);
+
+        totalSatisfaction += (MAX_ANGER - p.getAngerLevel());
+
+        int distance = currentFloor - p.getTargetFloor();
+
+        if (first || std::abs(distance) > std::abs(maxDistance)) {
+            maxDistance = distance;
+            first = false;
         }
     }
+
     targetFloor = currentFloor - maxDistance;
 }
-
 //////////////////////////////////////////////////////
 ////// DO NOT MODIFY ANY CODE BENEATH THIS LINE //////
 //////////////////////////////////////////////////////
